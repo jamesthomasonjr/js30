@@ -7,62 +7,86 @@
 </head>
 <body>
 
-
   <div class="keys">
-    <div data-key="65" class="key">
-      <kbd>A</kbd>
-      <span class="sound">clap</span>
-    </div>
-    <div data-key="83" class="key">
-      <kbd>S</kbd>
-      <span class="sound">hihat</span>
-    </div>
-    <div data-key="68" class="key">
-      <kbd>D</kbd>
-      <span class="sound">kick</span>
-    </div>
-    <div data-key="70" class="key">
-      <kbd>F</kbd>
-      <span class="sound">openhat</span>
-    </div>
-    <div data-key="71" class="key">
-      <kbd>G</kbd>
-      <span class="sound">boom</span>
-    </div>
-    <div data-key="72" class="key">
-      <kbd>H</kbd>
-      <span class="sound">ride</span>
-    </div>
-    <div data-key="74" class="key">
-      <kbd>J</kbd>
-      <span class="sound">snare</span>
-    </div>
-    <div data-key="75" class="key">
-      <kbd>K</kbd>
-      <span class="sound">tom</span>
-    </div>
-    <div data-key="76" class="key">
-      <kbd>L</kbd>
-      <span class="sound">tink</span>
-    </div>
   </div>
 
-  <audio data-key="65" src="sounds/clap.wav"></audio>
-  <audio data-key="83" src="sounds/hihat.wav"></audio>
-  <audio data-key="68" src="sounds/kick.wav"></audio>
-  <audio data-key="70" src="sounds/openhat.wav"></audio>
-  <audio data-key="71" src="sounds/boom.wav"></audio>
-  <audio data-key="72" src="sounds/ride.wav"></audio>
-  <audio data-key="74" src="sounds/snare.wav"></audio>
-  <audio data-key="75" src="sounds/tom.wav"></audio>
-  <audio data-key="76" src="sounds/tink.wav"></audio>
+  <template id="key">
+    <div class="key">
+      <kbd></kbd>
+      <span class="sound"></span>
+      <audio></audio>
+    </div>
+  </template>
 
 <script>
   (function(){
-    const keys = document.querySelectorAll('.key[data-key]');
-    keys.forEach(key => key.addEventListener('transitionend', removeTransition));
-    keys.forEach(key => key.addEventListener('click', keyClickHandler));
+    const keyTemplate = document.querySelector('#key');
+    const keysContainer = document.querySelector('.keys');
+    const data = [{
+      'key': 65,
+      'sound': 'clap'
+    },
+    {
+      'key': 83,
+      'sound': 'hihat'
+    },
+    {
+      'key': 68,
+      'sound': 'kick'
+    },
+    {
+      'key': 70,
+      'sound': 'openhat'
+    },
+    {
+      'key': 71,
+      'sound': 'boom'
+    },
+    {
+      'key': 72,
+      'sound': 'ride'
+    },
+    {
+      'key': 74,
+      'sound': 'snare'
+    },
+    {
+      'key': 75,
+      'sound': 'tom'
+    },
+    {
+      'key': 76,
+      'sound': 'tink'
+    }];
+
+    data.forEach(buildKeyFromData);
+    
+    function buildKeyFromData(data) {
+      const key = keyTemplate.content.firstElementChild.cloneNode(true);
+      const kbd = key.querySelector('kbd');
+      const sound = key.querySelector('.sound');
+      const audio = key.querySelector('audio');
+
+      key.dataset['key'] = data.key;
+      key.addEventListener('transitionend', removeTransition);
+      key.addEventListener('click', keyClickHandler);
+
+      kbd.textContent = String.fromCharCode(data.key).toUpperCase();
+      sound.textContent = data.sound;
+      audio.src = `sounds/${data.sound}.wav`;
+
+      keysContainer.appendChild(key);
+    }
+
     window.addEventListener('keydown', keyDownHandler);
+
+    function removeTransition(e) {
+      if (e.propertyName != 'transform') {
+        return;
+      }
+
+      this.classList.remove('playing');
+    }
 
     function keyClickHandler(e) {
       highlightKey(this.dataset['key']);
@@ -74,16 +98,8 @@
       playSound(e.keyCode);
     }
 
-    function removeTransition(e) {
-      if (e.propertyName != 'transform') {
-        return;
-      }
-
-      this.classList.remove('playing');
-    }
-
     function highlightKey(keyCode) {
-      const key = document.querySelector(`.key[data-key="${keyCode}"`);
+      const key = document.querySelector(`.key[data-key="${keyCode}"]`);
       if (!key) {
         return;
       }
@@ -92,7 +108,7 @@
     }
 
     function playSound(keyCode) {
-      const audio = document.querySelector(`audio[data-key="${keyCode}"`);
+      const audio = document.querySelector(`.key[data-key="${keyCode}"] audio`);
       if (!audio) {
         return;
       }
